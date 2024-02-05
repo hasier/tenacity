@@ -17,11 +17,11 @@
 
 import asyncio
 import functools
-import inspect
 import sys
 import typing as t
 
 import tenacity
+from tenacity import _utils
 from tenacity import AttemptManager
 from tenacity import BaseRetrying
 from tenacity import DoAttempt
@@ -74,15 +74,6 @@ WrappedFnReturnT = t.TypeVar("WrappedFnReturnT")
 WrappedFn = t.TypeVar("WrappedFn", bound=t.Callable[..., t.Awaitable[t.Any]])
 
 
-def is_coroutine_callable(call: t.Callable[..., t.Any]) -> bool:
-    if inspect.isroutine(call):
-        return inspect.iscoroutinefunction(call)
-    if inspect.isclass(call):
-        return False
-    dunder_call = getattr(call, "__call__", None)  # noqa: B004
-    return inspect.iscoroutinefunction(dunder_call)
-
-
 class AsyncRetrying(BaseRetrying):
     def __init__(
         self,
@@ -133,7 +124,7 @@ class AsyncRetrying(BaseRetrying):
 
     @classmethod
     def _wrap_action_func(cls, fn: t.Callable[..., t.Any]) -> t.Callable[..., t.Any]:
-        if is_coroutine_callable(fn):
+        if _utils.is_coroutine_callable(fn):
             return fn
 
         async def inner(*args: t.Any, **kwargs: t.Any) -> t.Any:

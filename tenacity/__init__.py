@@ -26,7 +26,7 @@ import warnings
 from abc import ABC, abstractmethod
 from concurrent import futures
 
-from . import asyncio as tasyncio
+from . import _utils
 
 # Import all built-in retry strategies for easier usage.
 from .retry import retry_base  # noqa
@@ -89,6 +89,7 @@ except ImportError:
 if t.TYPE_CHECKING:
     import types
 
+    from . import asyncio as tasyncio
     from .retry import RetryBaseT
     from .stop import StopBaseT
     from .wait import WaitBaseT
@@ -589,7 +590,7 @@ def retry(*dargs: t.Any, **dkw: t.Any) -> t.Any:
                     f"this will probably hang indefinitely (did you mean retry={f.__class__.__name__}(...)?)"
                 )
             r: "BaseRetrying"
-            if tasyncio.is_coroutine_callable(f):
+            if _utils.is_coroutine_callable(f):
                 r = AsyncRetrying(*dargs, **dkw)
             elif tornado and hasattr(tornado.gen, "is_coroutine_function") and tornado.gen.is_coroutine_function(f):
                 r = TornadoRetrying(*dargs, **dkw)

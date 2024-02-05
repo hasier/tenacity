@@ -13,9 +13,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import inspect
 import sys
 import typing
+import typing as t
 from datetime import timedelta
 
 
@@ -74,3 +75,12 @@ time_unit_type = typing.Union[int, float, timedelta]
 
 def to_seconds(time_unit: time_unit_type) -> float:
     return float(time_unit.total_seconds() if isinstance(time_unit, timedelta) else time_unit)
+
+
+def is_coroutine_callable(call: t.Callable[..., t.Any]) -> bool:
+    if inspect.isroutine(call):
+        return inspect.iscoroutinefunction(call)
+    if inspect.isclass(call):
+        return False
+    dunder_call = getattr(call, "__call__", None)  # noqa: B004
+    return inspect.iscoroutinefunction(dunder_call)
