@@ -84,3 +84,13 @@ def is_coroutine_callable(call: t.Callable[..., t.Any]) -> bool:
         return False
     dunder_call = getattr(call, "__call__", None)  # noqa: B004
     return inspect.iscoroutinefunction(dunder_call)
+
+
+def wrap_to_async_func(call: t.Callable[..., t.Any]) -> t.Callable[..., t.Awaitable[t.Any]]:
+    if is_coroutine_callable(call):
+        return call
+
+    async def inner(*args: t.Any, **kwargs: t.Any) -> t.Any:
+        return call(*args, **kwargs)
+
+    return inner
